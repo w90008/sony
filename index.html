@@ -1,81 +1,45 @@
-importScripts("misc.js");
+<!DOCTYPE html>
+<html lang="en" manifest="cache.manifest">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSSFontFace exploit</title>
+  <link rel="stylesheet" href="includes/style.css">
+</head>
+<body>
 
-let marker_arr = new Uint32Array(new ArrayBuffer(0x10));
+  <h1>CSSFontFace UAF Exploit</h1>
+  <h3 id="UA">Running on:</h3>
 
-const transfer = [];
-const api = {
-  init(name) {
-    self.name = name;
+  <hr>
 
-    version.init();
-    switch (version.console) {
-      case 4:
-        importScripts("ps4/constants.js", "ps4/userland.js");
-        break;
-      case 5:
-        //TODO
-        break;
-      default:
-        throw new Error(`Unsupported console ${version.console}`);
-    }
+  <div class="btn-container">
+    <form id="kernel-options">
+      <input type="radio" name="kernel" id="netctrl-exploit" value="netctrl">
+      <label for="netctrl-exploit">NetCtrl</label>
+      <input type="radio" name="kernel" id="lapse-exploit" value="lapse">
+      <label for="lapse-exploit">Lapse</label>
+    </form>
+    <button id="jeilbrek">Jeilbrek</button>
+    <div class="autoJb">
+      <label for="autoJbInput" id="autoJbLabel">Auto Jailbreak</label>
+      <input class="mt-2" id="autoJbInput" type="checkbox">
+    </div>
+  </div>
 
-    arw.master = new Uint32Array(6);
+  <div class="main-layout">
+    <div class="media-box">
+      <img src="includes/cat.jpg" alt="A cat staring at you">
+    </div>
 
-    marker_arr.fill(0x41414141);
-    marker_arr.leak = arw.leak;
-    marker_arr.master = arw.master;
-    marker_arr.victim = arw.victim;
+    <pre id="console">Ready. Awaiting execution...
+  </pre>
 
-    transfer.push(marker_arr.buffer);
 
-    return marker_arr;
-  },
-  setup(leak_addr, wk_base) {
-    transfer.length = 0;
+  </div>
 
-    marker_arr = null;
+  <script src="src/main.js"></script>
+  <script src="includes/script.js"></script>
+</body>
 
-    arw.leak_addr = new BInt(leak_addr);
-    webkit_base = new BInt(wk_base);
-
-    init_arw();
-    init_rop();
-    init_syscalls();
-
-    return true;
-  },
-  register(name, fn) {
-    if (typeof fn !== "string") {
-      throw new Error(`${fn} not a string !!`);
-    }
-
-    if (name in api) {
-      throw new Error(`${name} already registered !!`);
-    }
-
-    api[name] = new Function(`return (${fn})`)();
-
-    return true;
-  },
-  ping() {
-    return "pong";
-  },
-};
-
-self.onmessage = async (e) => {
-  const { id, name, args = [] } = e.data || {};
-
-  try {
-    const fn = api[name];
-
-    if (typeof fn !== "function") {
-      throw new Error(`Unknown function ${name} !!`);
-    }
-
-    const ret = await fn(...args);
-
-    self.postMessage({ id, type: "ret", value: ret }, transfer);
-  } catch (err) {
-    self.postMessage({ id, type: "err", value: err });
-  }
-};
+</html>
